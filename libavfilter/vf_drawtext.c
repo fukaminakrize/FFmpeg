@@ -571,10 +571,14 @@ static int load_textfile(AVFilterContext *ctx)
     size_t textbuf_size;
 
     if ((err = av_file_map(s->textfile, &textbuf, &textbuf_size, 0, ctx)) < 0) {
-        av_log(ctx, AV_LOG_ERROR,
-               "The text file '%s' could not be read or is empty\n",
+        av_log(ctx, AV_LOG_WARNING,
+               "The text file '%s' could not be read or is empty. Skipping text reloading for this frame.\n",
                s->textfile);
-        return err;
+
+        if (!s->text) {
+            s->text = "";
+        }
+        return 0;
     }
 
     if (textbuf_size > SIZE_MAX - 1 || !(tmp = av_realloc(s->text, textbuf_size + 1))) {
